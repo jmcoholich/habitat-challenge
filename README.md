@@ -12,8 +12,8 @@ This repository contains the starter code for the Habitat 2022 rearrangement cha
 
 In the object rearrangement task, a Fetch robot is randomly spawned in an unknown environment and asked to rearrange 1 object from an initial to desired position – picking/placing it from receptacles (counter, sink, sofa, table), opening/closing containers (drawers, fridges) as necessary. A map of the environment is not provided and the agent must only use its sensory input to navigate and rearrange.
 
-The Fetch robot is equipped with an egocentric 256x256 90-degree FoV RGBD camera on the robot head. 
-The agent also has access to idealized base-egomotion giving the relative displacement and angle of the base since the start of the episode. 
+The Fetch robot is equipped with an egocentric 256x256 90-degree FoV RGBD camera on the robot head.
+The agent also has access to idealized base-egomotion giving the relative displacement and angle of the base since the start of the episode.
 Additionally, the robot has proprioceptive joint sensing providing access to the current robot joint angles.
 
 For details about the agent, dataset, and evaluation, see the challenge website: [aihabitat.org/challenge/2022_rearrange](https://aihabitat.org/challenge/2022_rearrange/).
@@ -34,12 +34,12 @@ First setup Habitat Sim in a new conda environment so you can download the datas
     conda activate habitat
     ```
 
-1. Install Habitat-Sim using our custom Conda package for habitat challenge 2022 with: 
+1. Install Habitat-Sim using our custom Conda package for habitat challenge 2022 with:
     ```
     conda install -y habitat-sim-rearrange-challenge-2022  withbullet  headless -c conda-forge -c aihabitat
     ```
-    **On MacOS, omit the `headless` argument**.    
-    Note: If you face any issues related to the `GLIBCXX` version after conda installation, please uninstall this conda package and install the habitat-sim repository from source (more information [here](https://github.com/facebookresearch/habitat-sim/blob/main/BUILD_FROM_SOURCE.md#build-from-source)). Make sure that you are using the `hab2_challenge_2022` tag and not the `stable` branch for your installation. 
+    **On MacOS, omit the `headless` argument**.
+    Note: If you face any issues related to the `GLIBCXX` version after conda installation, please uninstall this conda package and install the habitat-sim repository from source (more information [here](https://github.com/facebookresearch/habitat-sim/blob/main/BUILD_FROM_SOURCE.md#build-from-source)). Make sure that you are using the `hab2_challenge_2022` tag and not the `stable` branch for your installation.
 
 1. Clone the challenge repository:
 
@@ -48,11 +48,11 @@ First setup Habitat Sim in a new conda environment so you can download the datas
     cd habitat-challenge
     ```
 
-1. Download the episode datasets, scenes, and all other assets with 
+1. Download the episode datasets, scenes, and all other assets with
     ```
     python -m habitat_sim.utils.datasets_download --uids rearrange_task_assets --data-path <path to download folder>
     ```
-    If this step was successful, you should see the train, val and minival splits in the `<path to download folder>/datasets/replica_cad/rearrange/v1/{train, val, minival}` folders respectively. 
+    If this step was successful, you should see the train, val and minival splits in the `<path to download folder>/datasets/replica_cad/rearrange/v1/{train, val, minival}` folders respectively.
 
 1. Now, create a symlink to the downloaded data in your habitat-challenge repository:
     ```
@@ -60,6 +60,33 @@ First setup Habitat Sim in a new conda environment so you can download the datas
     ```
 
 
+## Additional Installation Steps
+Written by Jeremiah Coholich after facing issues installing on an Ubuntu 20.04 workstation.
+
+When running DD-PPO on a workstation, you may encounter the following errors:
+
+Error: `OSError: /home/jcoholich/anaconda3/envs/rlgpu/lib/libstdc++.so.6: version 'GLIBCXX_3.4.30' not found (required by /home/jcoholich/anaconda3/envs/habitat/lib/python3.7/site-packages/llvmlite/binding/../../../../libLLVM-11.so)`:
+
+To fix or prevent this, run:
+```
+pip -y uninstall scipy
+pip install scipy
+pip install --ignore-installed llvmlite
+```
+
+Error: `FileNotFoundError: [Errno 2] No such file or directory: 'data/default.physics_config.json'`
+
+I added a copy of the default physics config file to this repo. To fix or prevent this error, run (in the `habitat-challenge` dir):
+```
+cp default.physics_config.json <absolute path to download folder>
+```
+
+Finally, there will be errors about being unable to locate the datasets. Simply symlink the data dir in `habitat-challenge` to a data dir in `habitat-lab`:
+
+Run in the `habitat-challenge` directory:
+```
+ln -s <absolute path to download folder> ../habitat-lab/data
+```
 
 ### Local Docker Evaluation
 In these steps, we will evaluate a sample agent in Docker. We evaluate in Docker because EvalAI requires submitting a Docker image to run your agent on the leaderboard. **Since these steps depend on [nvidia-docker v2](https://github.com/NVIDIA/nvidia-docker), they will only run on Linux**; no Windows or MacOS.
@@ -69,7 +96,7 @@ In these steps, we will evaluate a sample agent in Docker. We evaluate in Docker
 1. Install [nvidia-docker v2](https://github.com/NVIDIA/nvidia-docker) following instructions here: [https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
 Note: only supports Linux; no Windows or MacOS.
 
-1. Modify the [provided Dockerfile](https://github.com/facebookresearch/habitat-challenge/blob/rearrangement-challenge-2022/docker/hab2.Dockerfile) if you need custom modifications. Let’s say your code needs `pytorch==1.9.0`, these dependencies should be pip installed inside the Docker conda environment called `habitat`. Below is an example Dockerfile with pip installing custom dependencies. 
+1. Modify the [provided Dockerfile](https://github.com/facebookresearch/habitat-challenge/blob/rearrangement-challenge-2022/docker/hab2.Dockerfile) if you need custom modifications. Let’s say your code needs `pytorch==1.9.0`, these dependencies should be pip installed inside the Docker conda environment called `habitat`. Below is an example Dockerfile with pip installing custom dependencies.
 
     ```dockerfile
     FROM fairembodied/habitat-challenge:habitat_rearrangement_2022_base_docker
@@ -79,7 +106,7 @@ Note: only supports Linux; no Windows or MacOS.
 
     ADD agent.py /agent.py
     ```
-    Build your docker container using: 
+    Build your docker container using:
     ```bash
     docker build . --file docker/hab2.Dockerfile  -t rearrange_submission
     ```
@@ -120,7 +147,7 @@ Note: only supports Linux; no Windows or MacOS.
     ```
     Note: this same command will be run to evaluate your agent for the leaderboard. **Please submit your docker for remote evaluation (below) only if it runs successfully on your local setup.**
 
-### Online submission 
+### Online submission
 Follow instructions in the [submit tab of the EvalAI challenge page](https://eval.ai/web/challenges/challenge-page/1820/submission) to submit your docker image. Note that you will need a version of EvalAI >= 1.2.3. The challenge consists of the following phases:
 
 1. *Minival phase*: This split is used in the local evaluation scripts in this repository. The purpose of this phase/split is sanity checking -- to confirm that our remote evaluation reports the same result as the one you’re seeing locally.
@@ -134,11 +161,11 @@ Note: Your agent will be evaluated on 1000 episodes and will have a total availa
 ### DD-PPO Training Starter Code
 In this example, we will train and evaluate an end-to-end policy trained with DD-PPO. You will run all the subsequent steps from the `habitat` conda environment.
 
-1. Install [Habitat-Lab](https://github.com/facebookresearch/habitat-lab/) - Use the `rearrange_challenge_2022` branch in our Github repo, which can be cloned using: 
+1. Install [Habitat-Lab](https://github.com/facebookresearch/habitat-lab/) - Use the `rearrange_challenge_2022` branch in our Github repo, which can be cloned using:
     ```
     git clone --branch rearrange_challenge_2022 https://github.com/facebookresearch/habitat-lab.git
-    ``` 
-    Install Habitat Lab along with the included RL trainer code by first entering the `habitat-lab` directory, activating the `habitat` conda environment from step 1, and then running `pip install -r requirements.txt && python setup.py develop --all`. 
+    ```
+    Install Habitat Lab along with the included RL trainer code by first entering the `habitat-lab` directory, activating the `habitat` conda environment from step 1, and then running `pip install -r requirements.txt && python setup.py develop --all`.
 
 1. Follow this documentation for how to run DD-PPO in a single or multi-machine setup. See [habitat_baselines/ddppo](https://github.com/facebookresearch/habitat-lab/tree/main/habitat_baselines/rl/ddppo) for more information. These commands assume `habitat-lab` and `habitat-challenge` are in the same directory. Modify the paths in the arguments if your `habitat-challenge` directory is located somewhere else.
 
@@ -213,7 +240,7 @@ In this example, we will train and evaluate an end-to-end policy trained with DD
         ```
     1. Do not forget to add any other files you may need in the Docker, for example, we add the `data/models/rearrange_easy.pth` file which is the saved weights from the DD-PPO example code.
 
-    1. The scaffold for this code can be found `agents/random_agent.py` and the code for policies trained with Habitat Baselines can be found in `agents/habitat_baselines_agent.py`. 
+    1. The scaffold for this code can be found `agents/random_agent.py` and the code for policies trained with Habitat Baselines can be found in `agents/habitat_baselines_agent.py`.
 
 1. Once your Dockerfile and other code is modified to your satisfaction, build it with the following command.
     ```bash
@@ -227,7 +254,7 @@ First, you will need to train individual skill policies with RL. In this example
 
 1. Steps to train the skills from scratch:
 
-    1. Train the Pick skill. From the Habitat Lab directory, run 
+    1. Train the Pick skill. From the Habitat Lab directory, run
     ```bash
     python habitat_baselines/run.py \
         --exp-config habitat_baselines/config/rearrange/ddppo_pick.yaml \
